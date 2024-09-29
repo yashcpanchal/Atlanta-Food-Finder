@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Register</h1>
-    <form method="POST">
+    <form method="POST" action="{% url 'register' %}">
         {% csrf_token %}
         <label for="username">Username:</label>
         <input type="text" name="username" required><br>
