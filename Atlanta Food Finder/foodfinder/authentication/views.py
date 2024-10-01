@@ -40,16 +40,28 @@ def register_view(request):
         # Check if the passwords match
         if password != confirm_password:
             return HttpResponse('Passwords do not match.')
+        
+        if not security_question or not security_answer:
+            return HttpResponse('Please provide a security question and answer.')
 
         try:
             # Create the user
             user = User.objects.create_user(username=username, password=password)
-            
-            # Check if the user already has a profile (just a precaution)
-            if not hasattr(user, 'profile'):
-                Profile.objects.create(user=user, security_question=security_question, security_answer=security_answer)
+            user.save()
 
-            login(request, user)  # Log the user in automatically after registration
+            # Create or get the user's profile with security question and answer
+            profile, created = Profile.objects.get_or_create(user=user)
+            print('x')
+            profile.security_question = security_question
+            print('y')
+            profile.security_answer = security_answer
+            print('z')
+            profile.save()  # Save the profile
+            print('save')
+
+            # print(f"Created Profile: {profile}, Security Question: {profile.security_question}, Security Answer: {profile.security_answer}")
+            
+            # login(request, user)  # Log the user in automatically after registration
             return HttpResponse('Registration successful!')
 
         except IntegrityError as e:
@@ -60,32 +72,46 @@ def register_view(request):
     
     return render(request, 'register.html')
 
-def reset_password_view(request):
+def request_username_view(request):
     if request.method == 'POST':
         username = request.POST['username']
-        user = User.objects.filter(username=username).first()
-
-        if user:
-            profile = user.profile
-            if request.POST.get('security_answer'):
-                security_answer = request.POST['security_answer']
-                if profile.security_answer == security_answer:
-                    # Allow the user to reset the password
-                    new_password = request.POST['new_password']
-                    confirm_password = request.POST['confirm_password']
-                    if new_password == confirm_password:
-                        user.set_password(new_password)
-                        user.save()
-                        return HttpResponse('Password reset successfully!')
-                    else:
-                        return HttpResponse('Passwords do not match.')
-                else:
-                    return HttpResponse('Incorrect security answer.')
-            else:
-                # Render the form to ask the security question
-                return render(request, 'reset_password_question.html', {'question': profile.security_question})
+        # Check if the user exists
+        if User.objects.filter(username=username).exists():
+            user = User.objects.get(username=username)
+            request.session['reset_username'] = username  # Store the username in session
+            return redirect('reset_password')  # Redirect to the security question form
         else:
-            return HttpResponse('Username not found.')
+            return HttpResponse('Username does not exist.')
+    return render(request, 'request_username.html')
 
-    return render(request, 'reset_password.html')
-# Create your views here.
+def reset_password_view(request):
+    username = request.session.get('reset_username', None)
+    if not username:
+        return HttpResponse('No username provided.')
+
+    user = User.objects.get(username=username)
+
+    try:
+        profile = Profile.objects.get(user=user)
+    except Profile.DoesNotExist:
+        return HttpResponse('No profile found for this user.')
+    
+    print(f"Created Profile: {profile}, Security Question: {profile.security_question}, Security Answer: {profile.security_answer}")
+
+    if request.method == 'POST':
+        answer = request.POST['security_answer'].strip().lower()
+        if answer == profile.security_answer.strip().lower():
+            # Correct answer, allow password reset
+            new_password = request.POST['new_password']
+            confirm_password = request.POST['confirm_password']
+
+            if new_password == confirm_password:
+                user.set_password(new_password)
+                user.save()
+                return HttpResponse('Password reset successful!')
+            else:
+                return HttpResponse('Passwords do not match.')
+        else:
+            return HttpResponse('Security answer is incorrect.')
+    
+    return render(request, 'reset_password_question.html', {'security_question': profile.security_question})
