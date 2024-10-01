@@ -4,16 +4,37 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from .models import Profile
 from django.db import IntegrityError
+from django.contrib.auth import logout
 
 
 def home_view(request):
+    # Check if the user has just registered
+    if request.session.get('just_registered'):
+        # Log out the user
+        logout(request)
+        # Remove the flag after logging out
+        request.session.pop('just_registered', None)
+        return redirect('login')  # Redirect them to the login page or other safe page
     return render(request, 'home.html')
 
 def login_view(request):
+    # Check if the user has just registered
+    if request.session.get('just_registered'):
+        # Log out the user
+        logout(request)
+        # Remove the flag after logging out
+        request.session.pop('just_registered', None)
+        return redirect('login')  # Redirect them to the login page or other safe page
+
+
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
+        try:
+            profile = Profile.objects.get(user=user)
+        except Profile.DoesNotExist:
+            return HttpResponse('No profile found for this user.')
         if user is not None:
             login(request, user)
             return HttpResponse('Logged in successfully!')
@@ -26,6 +47,14 @@ def logout_view(request):
     return redirect('/auth/login/')
 
 def register_view(request):
+    # Check if the user has just registered
+    if request.session.get('just_registered'):
+        # Log out the user
+        logout(request)
+        # Remove the flag after logging out
+        request.session.pop('just_registered', None)
+        return redirect('login')  # Redirect them to the login page or other safe page
+
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -51,33 +80,44 @@ def register_view(request):
 
             # Create or get the user's profile with security question and answer
             profile, created = Profile.objects.get_or_create(user=user)
-            print('x')
             profile.security_question = security_question
-            print('y')
             profile.security_answer = security_answer
-            print('z')
-            profile.save()  # Save the profile
-            print('save')
-
-            # print(f"Created Profile: {profile}, Security Question: {profile.security_question}, Security Answer: {profile.security_answer}")
-            
-            # login(request, user)  # Log the user in automatically after registration
-            return HttpResponse('Registration successful!')
+            profile.save(update_fields=['security_question', 'security_answer'])  # Save the profile
+            request.session['just_registered'] = True
+            return redirect('login_user', username=username)
 
         except IntegrityError as e:
             return HttpResponse('Profile for this user already exists.')
         except Exception as e:
             print(f"Error creating user: {e}")
             return HttpResponse('An error occurred during registration. Please try again.')
-    
     return render(request, 'register.html')
 
+def login_user(request, username):
+    user = User.objects.get(username=username)
+    login(request, user)  # Log the user in
+    return HttpResponse('Registration successful!')  # Redirect them to a home page or other destination
+
 def request_username_view(request):
+    # Check if the user has just registered
+    if request.session.get('just_registered'):
+        # Log out the user
+        logout(request)
+        # Remove the flag after logging out
+        request.session.pop('just_registered', None)
+        return redirect('login')  # Redirect them to the login page or other safe page
+
+
     if request.method == 'POST':
         username = request.POST['username']
         # Check if the user exists
+        
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)
+            try:
+                profile = Profile.objects.get(user=user)
+            except Profile.DoesNotExist:
+                return HttpResponse('No profile found for this user.')
             request.session['reset_username'] = username  # Store the username in session
             return redirect('reset_password')  # Redirect to the security question form
         else:
@@ -85,6 +125,14 @@ def request_username_view(request):
     return render(request, 'request_username.html')
 
 def reset_password_view(request):
+    # Check if the user has just registered
+    if request.session.get('just_registered'):
+        # Log out the user
+        logout(request)
+        # Remove the flag after logging out
+        request.session.pop('just_registered', None)
+        return redirect('login')  # Redirect them to the login page or other safe page
+
     username = request.session.get('reset_username', None)
     if not username:
         return HttpResponse('No username provided.')
@@ -96,7 +144,6 @@ def reset_password_view(request):
     except Profile.DoesNotExist:
         return HttpResponse('No profile found for this user.')
     
-    print(f"Created Profile: {profile}, Security Question: {profile.security_question}, Security Answer: {profile.security_answer}")
 
     if request.method == 'POST':
         answer = request.POST['security_answer'].strip().lower()
