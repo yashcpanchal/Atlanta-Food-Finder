@@ -1,34 +1,50 @@
-h3 {
-    color: navy;
+/* Top banner styling */
+#top-banner {
+    background-color: darkseagreen;  /* Background color for the banner */
+    color: white;  /* Text color */
+    padding: 20px;  /* Space around the content inside the banner */
+    text-align: left;
+    position: fixed;  /* Fix the banner at the top */
+    top: 0;  /* Align it to the top of the page */
+    width: 100%;  /* Make it span the full width of the screen */
+    /*z-index: 1000;  !* Keep it above other content *!*/
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);  /* Add some shadow for a subtle 3D effect */
+}
+
+/* Styling for the title inside the banner */
+#top-banner h1 {
+    margin: 0;  /* Remove default margin from the h1 */
+    font-size: 1.5em;  /* Adjust font size */
+    font-family: 'Corbel', sans-serif;  /* Set the font */
 }
 
 #map {
     height: 600px;
     width: 95%;
+    top: 70px;
+    border: darkseagreen;
+    padding: 15px 30px;
 }
 
 /* Styling for the filter inputs and search bar */
-#search-container, #filter-container {
+#search-container {
     position: absolute;
-    top: 10px;
-    left: 50%;
-    margin-left: -200px;
+    top: 60px;
+    right: 70px;
     z-index: 5;
-    background-color: white;
-    padding: 10px;
-}
-
-#filter-container {
-    top: 10px;
-    left: 80%;
+    padding: 20px;  /* Increased padding for more space */
+    width: 170px;   /* Increased width for a larger search container */
+    /*background-color: white;*/
+    /*border-radius: 5px;  !* Optional: add some rounding to the corners *!*/
+    /*box-shadow: 0 2px 5px white;  !* Optional: add some shadow for depth *!*/
 }
 
 /* geolocator/css/map.css */
 /* Style the results container to be on the left side of the map */
 #results-container {
   position: absolute;
-  top: 10px; /* Space from top */
-  left: 20px; /* Space from left */
+  top: 70px; /* Space from top */
+  left: 15px; /* Space from left */
   width: 300px;
   height: calc(100vh - 120px); /* Responsive height */
   background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
@@ -55,3 +71,16 @@ h3 {
 #results-list li:hover {
   background-color: #f0f0f0;
 }
+
+.close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+        font-size: 20px;
+        color: #333;
+      }
+
+      .close-btn:hover {
+        color: #ff0000;
+      }

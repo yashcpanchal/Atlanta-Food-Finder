@@ -2,12 +2,21 @@
 <html>
   <head>
     <title>Atlanta Food Finder</title>
-      
+
     {% load static %}  
     <link rel="stylesheet" type="text/css" href="{% static 'geolocator/css/map.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
   </head>
-  <body>
-    <h3>Atlanta Food Finder</h3>
+ <body>
+ <!-- Top Banner -->
+  <header id="top-banner">
+    <h1>Atlanta Food Finder</h1>
+{#      <button>Login</button>#}
+  </header>
+ 
+{# <i class="fas fa-home" style="font-size: 24px; color: darkslategray; cursor: pointer;" onclick="window.location.href='{% url 'admin.site.urls' %}'"></i>#}
+
 
     <!-- Search bar -->
     <div id="search-container">
@@ -19,16 +28,8 @@
 
     <!-- Results Tab and Filters for distance and rating -->
     <div id="results-container" style="display:none;">
+      <span class="close-btn">&times;</span> <!-- The close icon -->
       <h4>Search Results</h4>
-
-      <label for="distance">Max Distance (meters):</label>
-      <input id="distance" type="number" value="5000" min="0">
-
-      <label for="rating">Minimum Rating:</label>
-      <input id="rating" type="number" value="4" step="0.1" min="0" max="5">
-
-      <button id="apply-filters">Apply Filters</button>
-
       <ul id="results-list"></ul>  <!-- Unordered list to hold the place results -->
     </div>
 
@@ -101,11 +102,9 @@
           map.fitBounds(bounds);
         });
 
-        // Apply filters when the user clicks the "Apply Filters" button
-        document.getElementById('apply-filters').addEventListener('click', function () {
-          const maxDistance = parseFloat(document.getElementById('distance').value);
-          const minRating = parseFloat(document.getElementById('rating').value);
-          filterResults(maxDistance, minRating);
+        // Add event listener for the close button
+        document.querySelector('.close-btn').addEventListener('click', function() {
+          document.getElementById('results-container').style.display = 'none';
         });
       }
 
@@ -114,59 +113,107 @@
         const resultsList = document.getElementById('results-list');
         resultsList.innerHTML = '';
 
-        places.forEach((place) => {
-          const li = document.createElement('li');
-          li.textContent = `${place.name} (Rating: ${place.rating || 'N/A'})`;
-          
-          // Center the map on the place when clicked
-          li.addEventListener('click', function() {
+        places.forEach((place, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            ${place.name}
+            <button class="star-btn" data-place-id="${place.place_id}">
+                <i class="fas fa-heart"></i>  <!-- FontAwesome star icon -->
+            </button>
+        `;
+
+        // Add event listener to center the map and open the info window when the list item is clicked
+        li.querySelector('.star-btn').addEventListener('click', function (event) {
+            event.stopPropagation(); // Prevent map centering when the star is clicked
+
+            // Fetch the place ID from the data attribute
+            const placeId = this.getAttribute('data-place-id');
+
+            // Send a request to the view to save this place to the favorites list
+            addToFavorites(placeId);
+        });
+
+        li.addEventListener('click', function () {
+            // Center the map on the selected place
             map.setCenter(place.geometry.location);
-            infowindow.setContent(`${place.name}<br>Rating: ${place.rating || 'N/A'}`);
-            infowindow.open(map);
-          });
-          
+            const marker = markers[index] || createMarker(place);
+
+            // Create the info window content
+            const placeName = place.name || "Unknown Place";
+            const rating = place.rating ? `Rating: ${place.rating}/5` : "No ratings available";
+            const address = place.formatted_address || "Address not available";
+            const phone = place.formatted_phone_number || place.international_phone_number || "Phone not available";
+            const reviews = place.reviews && place.reviews.length > 0
+                ? `<p><strong>Review:</strong> <a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1,,," target="_blank">${place.reviews[0].text}</a></p>`
+                : `<p>No reviews available</p>`;
+            const photo = place.photos && place.photos.length > 0
+                ? `<img src="${place.photos[0].getUrl({ maxWidth: 100, maxHeight: 100 })}" alt="${placeName} photo">`
+                : `<img src="https://via.placeholder.com/100" alt="No Image Available">`;
+            const mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}" target="_blank">${address}</a>`;
+
+            // Set the content for the info window
+            const contentString = `
+                <div style="text-align: left;">
+                    <h4>${placeName}</h4>
+                    ${photo}
+                    <p>${mapLink}</p>
+                    <p>Phone: ${phone}</p>
+                    <p>${rating}</p>
+                    ${reviews}
+                </div>
+            `;
+
+            infowindow.setContent(contentString);
+            infowindow.open(map, marker);
+        });
           resultsList.appendChild(li);
         });
       }
 
-      // Function to filter the places based on distance and rating
-      function filterResults(maxDistance, minRating) {
-        const center = map.getCenter();
-        const filteredResults = placesResults.filter((place) => {
-          const meetsRating = place.rating >= minRating;
-          const distance = google.maps.geometry.spherical.computeDistanceBetween(
-            center, place.geometry.location
-          );
-          const meetsDistance = distance <= maxDistance;
+    function createMarker(place) {
+    const marker = new google.maps.Marker({
+        map: map,
+        position: place.geometry.location,
+        title: place.name,
+    });
 
-          return meetsRating && meetsDistance;
-        });
+    markers.push(marker);
 
-        // Update markers and the results list based on filters
-        clearMarkers();
-        updateResultsList(filteredResults);
+    // Prepare place details for the info window content
+    const placeName = place.name || "Unknown Place";
+    const rating = place.rating ? `Rating: ${place.rating}/5` : "No ratings available";
+    const address = place.formatted_address || "Address not available";
+    const phone = place.formatted_phone_number || place.international_phone_number || "Phone not available";
+    const reviews = place.reviews && place.reviews.length > 0
+        ? `<p><strong>Review:</strong> <a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1,,," target="_blank">${place.reviews[0].text}</a></p>`
+        : `<p>No reviews available</p>`;
+    
+    // Use the first photo if available, otherwise use a placeholder image
+    const photo = place.photos && place.photos.length > 0
+        ? `<img src="${place.photos[0].getUrl({maxWidth: 100, maxHeight: 100})}" alt="${placeName} photo">`
+        : `<img src="https://via.placeholder.com/100" alt="No Image Available">`;
+        
+    // Create a hyperlink to the place in Google Maps
+    const mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}" target="_blank">${address}</a>`;
+    // Info window content with photo, address, contact info, ratings, reviews
+    const contentString = `
+        <div style="text-align: left;">
+            <h4>${placeName}</h4>
+            ${photo}
+            <p>${mapLink}</p>
+            <p>Phone: ${phone}</p>
+            <p>${rating}</p>
+            ${reviews}
+        </div>
+    `;
 
-        filteredResults.forEach((place) => {
-          createMarker(place);
-        });
-      }
-
-      // Function to create a marker on the map for a given place
-      function createMarker(place) {
-        const marker = new google.maps.Marker({
-          map: map,
-          position: place.geometry.location,
-          title: place.name,
-        });
-
-        markers.push(marker);
-
-        google.maps.event.addListener(marker, 'click', function () {
-          infowindow.setContent(`${place.name}<br>Rating: ${place.rating || 'N/A'}`);
-          infowindow.open(map, this);
-        });
-      }
-
+    // Add event listener for the marker to display info window
+    google.maps.event.addListener(marker, 'click', function () {
+        map.setCenter(place.geometry.location);
+        infowindow.setContent(contentString);
+        infowindow.open(map, this);
+    });
+}
       // Function to clear all markers from the map
       function clearMarkers() {
         markers.forEach((marker) => marker.setMap(null));
