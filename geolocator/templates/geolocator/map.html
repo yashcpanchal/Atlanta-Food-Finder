@@ -117,25 +117,37 @@
         const resultsList = document.getElementById('results-list');
         resultsList.innerHTML = '';
 
-        places.forEach((place, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            ${place.name}
-            <button class="star-btn" data-place-id="${place.place_id}">
-                <i class="fas fa-star"></i>  <!-- FontAwesome star icon -->
-            </button>
-        `;
+        {#places.forEach((place, index) => {#}
+        {#const li = document.createElement('li');#}
+        {#li.innerHTML = `#}
+        {#    ${place.name}#}
+        {#    <button class="star-btn" data-place-id="${place.place_id}">#}
+        {#        <i class="fas fa-star"></i>  <!-- FontAwesome star icon -->#}
+        {#    </button>#}
+        {#`;#}
+      places.forEach((place, index) => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        ${place.name}
+        <form action="/add_favorite/${place.place_id}/" method="POST" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="star-btn" data-place-id="${place.place_id}">
+            <i class="fas fa-star"></i>  <!-- FontAwesome star icon -->
+          </button>
+        </form>
+      `;
 
-        // Add event listener to center the map and open the info window when the list item is clicked
-        li.querySelector('.star-btn').addEventListener('click', function (event) {
-            event.stopPropagation(); // Prevent map centering when the star is clicked
 
-            // Fetch the place ID from the data attribute
-            const placeId = this.getAttribute('data-place-id');
-
-            // Send a request to the view to save this place to the favorites list
-            addToFavorites(placeId);
-        });
+        {#// Add event listener to center the map and open the info window when the list item is clicked#}
+        {#li.querySelector('.star-btn').addEventListener('click', function (event) {#}
+        {#    event.stopPropagation(); // Prevent map centering when the star is clicked#}
+        {##}
+        {#    // Fetch the place ID from the data attribute#}
+        {#    const placeId = this.getAttribute('data-place-id');#}
+        {##}
+        {#    // Send a request to the view to save this place to the favorites list#}
+        {#    add_favorite(placeId);#}
+        {#});#}
 
         li.addEventListener('click', function () {
             // Center the map on the selected place

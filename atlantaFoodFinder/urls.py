@@ -19,7 +19,8 @@ from django.urls import path, include
 from geolocator import views
 
 urlpatterns = [
-    path('map/', views.geolocator, name='restaurant_map'),
     path('admin/', admin.site.urls),
-path('favorites/', views.favorites, name='favorites'),
+    path('accounts/', include('authentication.urls')),
+    path('map/', views.geolocator, name='geolocator'),
+    path('add_favorite/<str:restaurant_id>/', views.add_favorite, name='add_favorite'),
 ]

@@ -5,4 +5,4 @@ class ProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'security_question')
 
 # Register your models here.
-#yo
+admin.site.register(Profile)
