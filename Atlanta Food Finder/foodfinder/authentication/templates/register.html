@@ -4,38 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
+    <style>
+        .error-message {
+            color: red;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .error-border {
+            border: 1px solid red;
+        }
+    </style>
 </head>
 <body>
     <h1>Register</h1>
     <form method="POST" action="{% url 'register' %}">
         {% csrf_token %}
+
+        {% if error_message %}
+        <div class="error-message">{{ error_message }}</div>
+        {% endif %}
+
         <label for="username">Username:</label>
-        <input type="text" name="username" required><br>
+        <input type="text" name="username" 
+                class="{% if error_message %}error-border{% endif %}" required><br>
 
         <label for="password">Password:</label>
-        <input type="password" name="password" required><br>
+        <input type="password" name="password" 
+                class="{% if error_message %}error-border{% endif %}" required><br>
 
         <label for="confirm_password">Confirm Password:</label>
-        <input type="password" name="confirm_password" required><br>
+        <input type="password" name="confirm_password" 
+                class="{% if error_message %}error-border{% endif %}" required><br>
 
         <label for="security_question">Security Question:</label>
-        <input type="text" name="security_question" required><br>
+        <input type="text" name="security_question" 
+                class="{% if error_message %}error-border{% endif %}" required><br>
 
         <label for="security_answer">Answer:</label>
-        <input type="text" name="security_answer" required><br>
+        <input type="text" name="security_answer" 
+                class="{% if error_message %}error-border{% endif %}" required><br>
 
         <input type="submit" value="Register">
     </form>
-
     <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
-
-    <!-- Optional: Display any error messages if present -->
-    {% if messages %}
-        <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
 </body>
 </html>

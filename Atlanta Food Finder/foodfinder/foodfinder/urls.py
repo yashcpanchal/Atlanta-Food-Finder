@@ -21,6 +21,7 @@ from authentication.views import home_view
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('authentication.urls')),  # Include the auth app URLs
+    path('geolocator/', include('geolocator.urls')),
     path('', home_view),  # Handle root URL with the home view
 ]
 

@@ -1,6 +1,5 @@
 from django.shortcuts import render
-
-from atlantaFoodFinder import settings
+from foodfinder import settings
 from .models import Restaurant
 
 def geolocator(request):
