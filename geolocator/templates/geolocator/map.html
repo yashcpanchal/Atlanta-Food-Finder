@@ -12,7 +12,11 @@
  <!-- Top Banner -->
   <header id="top-banner">
     <h1>Atlanta Food Finder</h1>
-{#      <button>Login</button>#}
+{#    <div class="circle-btn-container">#}
+{#        <a href="{%  %}" class="circle-btn">#}
+{#          <i class="fas fa-user"></i> <!-- Font Awesome user icon -->#}
+{#        </a>#}
+{#    </div>  #}
   </header>
  
 {# <i class="fas fa-home" style="font-size: 24px; color: darkslategray; cursor: pointer;" onclick="window.location.href='{% url 'admin.site.urls' %}'"></i>#}
@@ -118,7 +122,7 @@
         li.innerHTML = `
             ${place.name}
             <button class="star-btn" data-place-id="${place.place_id}">
-                <i class="fas fa-heart"></i>  <!-- FontAwesome star icon -->
+                <i class="fas fa-star"></i>  <!-- FontAwesome star icon -->
             </button>
         `;
 
@@ -143,9 +147,8 @@
             const rating = place.rating ? `Rating: ${place.rating}/5` : "No ratings available";
             const address = place.formatted_address || "Address not available";
             const phone = place.formatted_phone_number || place.international_phone_number || "Phone not available";
-            const reviews = place.reviews && place.reviews.length > 0
-                ? `<p><strong>Review:</strong> <a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1,,," target="_blank">${place.reviews[0].text}</a></p>`
-                : `<p>No reviews available</p>`;
+            const reviews = `<a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1" target="_blank">Read Reviews or Leave a Review!</a>`;
+
             const photo = place.photos && place.photos.length > 0
                 ? `<img src="${place.photos[0].getUrl({ maxWidth: 100, maxHeight: 100 })}" alt="${placeName} photo">`
                 : `<img src="https://via.placeholder.com/100" alt="No Image Available">`;
@@ -184,10 +187,8 @@
     const rating = place.rating ? `Rating: ${place.rating}/5` : "No ratings available";
     const address = place.formatted_address || "Address not available";
     const phone = place.formatted_phone_number || place.international_phone_number || "Phone not available";
-    const reviews = place.reviews && place.reviews.length > 0
-        ? `<p><strong>Review:</strong> <a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1,,," target="_blank">${place.reviews[0].text}</a></p>`
-        : `<p>No reviews available</p>`;
-    
+    const reviews = `<a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1" target="_blank">Read Reviews or Leave a Review!</a>`;
+
     // Use the first photo if available, otherwise use a placeholder image
     const photo = place.photos && place.photos.length > 0
         ? `<img src="${place.photos[0].getUrl({maxWidth: 100, maxHeight: 100})}" alt="${placeName} photo">`

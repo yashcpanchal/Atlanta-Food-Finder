@@ -1,12 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from atlantaFoodFinder import settings
-from .models import Restaurant
-
-# def geolocator(request):
-#     restaurants = Restaurant.objects.all()
-#     return render(request, 'geolocator/map.html', {'restaurants': restaurants,
-#                                                    'google_api_key': settings.GOOGLE_API_KEY,})
-
+from .models import Restaurant, Favorite
+from django.contrib.auth.decorators import login_required
 
 def get_nearby_places(location, radius, keyword=None, min_rating=0):
     """
@@ -35,7 +30,6 @@ def get_nearby_places(location, radius, keyword=None, min_rating=0):
 
     return filtered_places
 
-
 # Main view to handle place search
 def geolocator(request):
     user_lat = request.GET.get('latitude')  # User's latitude
@@ -58,3 +52,36 @@ def geolocator(request):
         return render(request, 'geolocator/map.html', {'context': context, 'google_api_key': settings.GOOGLE_API_KEY,})
 
     return render(request, 'geolocator/map.html', {'google_api_key': settings.GOOGLE_API_KEY})
+
+@login_required
+def add_favorite(request, restaurant_id):
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+    favorite, created = Favorite.objects.get_or_create(user=request.user, restaurant=restaurant)
+    if created:
+        # Optional: Add a success message
+        # messages.success(request, f"{restaurant.name} has been added to your favorites.")
+        pass
+    else:
+        # Optional: Handle the case where the favorite already exists
+        # messages.info(request, f"{restaurant.name} is already in your favorites.")
+        pass
+    return redirect('restaurant_detail', restaurant_id=restaurant.id)
+
+@login_required
+def remove_favorite(request, restaurant_id):
+    restaurant = get_object_or_404(Restaurant, id=restaurant_id)
+    favorite = Favorite.objects.filter(user=request.user, restaurant=restaurant)
+    if favorite.exists():
+        favorite.delete()
+        # Optional: Add a success message
+        # messages.success(request, f"{restaurant.name} has been removed from your favorites.")
+    else:
+        # Optional: Handle the case where the favorite does not exist
+        # messages.error(request, f"{restaurant.name} is not in your favorites.")
+        pass
+    return redirect('restaurant_detail', restaurant_id=restaurant.id)
+
+@login_required
+def list_favorites(request):
+    favorites = Favorite.objects.filter(user=request.user).select_related('restaurant')
+    return render(request, 'favorites/list_favorites.html', {'favorites': favorites})
