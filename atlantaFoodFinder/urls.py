@@ -21,4 +21,5 @@ from geolocator import views
 urlpatterns = [
     path('map/', views.geolocator, name='restaurant_map'),
     path('admin/', admin.site.urls),
+path('favorites/', views.favorites, name='favorites'),
 ]
