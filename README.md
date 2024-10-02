@@ -22,3 +22,6 @@ To run this project locally:
 1. Clone the repository:
    ```bash
    git clone https://github.com/username/atlanta-food-finder.git
+
+## Team Website
+https://aditiu101.wixsite.com/team-50
