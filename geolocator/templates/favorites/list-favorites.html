@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Atlanta Food Finder - Favorite Restaurants</title>
     <!-- Font and Icon Libraries -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -140,8 +137,8 @@
 
     </style>
 </head>
- <!-- Top Banner -->
-  <!-- Top Banner Section -->
+<body>
+    <!-- Top Banner Section -->
     <div class="banner">
         <!-- Left-aligned Title and Icon -->
         <div>
@@ -155,14 +152,33 @@
             <a href="{% url 'logout' %}">Logout</a>
         </div>
     </div>
-<body>
-    <div class="container">
-        <a href="/auth/register/">Register</a><br>
-        <a href="/auth/login">Login</a>
 
+    <!-- Main Content Section -->
+    <div class="content">
+        {% block content %}
+            <h2>Your Favorite Restaurants</h2>
+
+            {% if favorites %}
+                <ul>
+                    {% for favorite in favorites %}
+                        <li>
+                            <span>{{ favorite.restaurant_name }}</span>
+                            <form action="{% url 'add_favorite' favorite.restaurant favorite.restaurant_name %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit">Remove</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>You have no favorite restaurants yet.</p>
+            {% endif %}
+        {% endblock %}
     </div>
 
-<!-- Footer Section -->
-
+    <!-- Footer Section -->
+    <div class="footer">
+        <p>&copy; 2024 Atlanta Food Finder | <a href="#">Privacy Policy</a> | <a href="#">Contact Us</a></p>
+    </div>
 </body>
 </html>

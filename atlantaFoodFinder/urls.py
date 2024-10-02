@@ -24,5 +24,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('authentication.urls')),
     path('map/', views.geolocator, name='geolocator'),
-    path('add_favorite/<str:restaurant_id>/', views.add_favorite, name='add_favorite'),
+    path('add_favorite/<str:place_id>/<str:place_name>/', views.add_favorite, name='add_favorite'),
+    path('list-favorites/', views.list_favorites, name='list_favorites')
 ]

@@ -7,12 +7,158 @@
     <link rel="stylesheet" type="text/css" href="{% static 'geolocator/css/map.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+
+      <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlanta Food Finder - Favorite Restaurants</title>
+    <!-- Font and Icon Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <style>
+        /* Global Styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        /* Banner Styling */
+        .banner {
+            background-color: #a3c1a5;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .banner h1 {
+            margin: 0;
+            font-size: 30px;
+            color: #ffffff;
+            display: inline-block;
+        }
+
+        .banner i {
+            margin-right: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ffffffb3; /* Slightly lighter color on hover */
+        }
+
+        /* Content Styling */
+        .content {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .content h2 {
+            font-weight: 500;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .content ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .content li {
+            background: #f4f7f6;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+
+        .content li:hover {
+            background: #e9f5e9;
+        }
+
+        /* Button Styling */
+        .content button {
+            background: #ef5350;
+            color: #ffffff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .content button:hover {
+            background: #d32f2f;
+        }
+
+        /* Footer Styling */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #a3c1a5;
+            color: #ffffff;
+            margin-top: 50px;
+            border-top: 3px solid #8aa38b;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        </style>
   </head>
  <body>
-   <header id="top-banner">
-        <h1>Atlanta Food Finder</h1>
+ <!-- Top Banner -->
+  <!-- Top Banner Section -->
+    <div class="banner">
+        <!-- Left-aligned Title and Icon -->
+        <div>
+            <h1><i class="fas fa-utensils"></i> Atlanta Food Finder</h1>
         </div>
-    </header>
+
+        <!-- Right-aligned Navigation Links -->
+        <div class="nav-links">
+            <a href="{% url 'geolocator' %}">Map</a>
+            <a href="{% url 'list_favorites' %}">Favorites</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
 
 {# <i class="fas fa-home" style="font-size: 24px; color: darkslategray; cursor: pointer;" onclick="window.location.href='{% url 'admin.site.urls' %}'"></i>#}
 
@@ -24,6 +170,16 @@
 
     <!-- The container for the map -->
     <div id="map"></div>
+
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+            {{ message }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
     <!-- Results Tab and Filters for distance and rating -->
     <div id="results-container" style="display:none;">
@@ -112,18 +268,38 @@
         const resultsList = document.getElementById('results-list');
         resultsList.innerHTML = '';
 
+        {#places.forEach((place, index) => {#}
+        {#const li = document.createElement('li');#}
+        {#li.innerHTML = `#}
+        {#    ${place.name}#}
+        {#    <button class="star-btn" data-place-id="${place.place_id}">#}
+        {#        <i class="fas fa-star"></i>  <!-- FontAwesome star icon -->#}
+        {#    </button>#}
+        {#`;#}
       places.forEach((place, index) => {
       const li = document.createElement('li');
       li.innerHTML = `
         ${place.name}
-        <form action="/add_favorite/${place.place_id}/" method="POST" style="display:inline;">
+        <form action="/add_favorite/${place.place_id}/${place.name}/" method="POST" style="display:inline;">
           {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}">
           <button type="submit" class="star-btn" data-place-id="${place.place_id}">
             <i class="fas fa-star"></i>  <!-- FontAwesome star icon -->
           </button>
         </form>
       `;
 
+
+        {#// Add event listener to center the map and open the info window when the list item is clicked#}
+        {#li.querySelector('.star-btn').addEventListener('click', function (event) {#}
+        {#    event.stopPropagation(); // Prevent map centering when the star is clicked#}
+        {##}
+        {#    // Fetch the place ID from the data attribute#}
+        {#    const placeId = this.getAttribute('data-place-id');#}
+        {##}
+        {#    // Send a request to the view to save this place to the favorites list#}
+        {#    add_favorite(placeId, placeName);#}
+        {#});#}
 
         li.addEventListener('click', function () {
             // Center the map on the selected place
@@ -136,10 +312,12 @@
             const address = place.formatted_address || "Address not available";
             const phone = place.formatted_phone_number || place.international_phone_number || "Phone not available";
             const reviews = `<a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1" target="_blank">Read Reviews or Leave a Review!</a>`;
+
             const photo = place.photos && place.photos.length > 0
                 ? `<img src="${place.photos[0].getUrl({ maxWidth: 100, maxHeight: 100 })}" alt="${placeName} photo">`
                 : `<img src="https://via.placeholder.com/100" alt="No Image Available">`;
             const mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}" target="_blank">${address}</a>`;
+
             // Set the content for the info window
             const contentString = `
                 <div style="text-align: left;">
@@ -174,10 +352,12 @@
     const address = place.formatted_address || "Address not available";
     const phone = place.formatted_phone_number || place.international_phone_number || "Phone not available";
     const reviews = `<a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1" target="_blank">Read Reviews or Leave a Review!</a>`;
+
     // Use the first photo if available, otherwise use a placeholder image
     const photo = place.photos && place.photos.length > 0
         ? `<img src="${place.photos[0].getUrl({maxWidth: 100, maxHeight: 100})}" alt="${placeName} photo">`
         : `<img src="https://via.placeholder.com/100" alt="No Image Available">`;
+
     // Create a hyperlink to the place in Google Maps
     const mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}" target="_blank">${address}</a>`;
     // Info window content with photo, address, contact info, ratings, reviews
@@ -207,5 +387,7 @@
 
       window.onload = initMap;
     </script>
+
+
   </body>
 </html>

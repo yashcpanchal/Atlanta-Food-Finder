@@ -56,34 +56,22 @@ def geolocator(request):
     return render(request, 'geolocator/map.html', {'google_api_key': settings.GOOGLE_API_KEY})
 
 @login_required
-def add_favorite(request, place_id):
-    restaurant = get_object_or_404(Restaurant, place_id = place_id)
-    favorite, created = Favorite.objects.get_or_create(user=request.user, restaurant=restaurant)
-    if created:
-        # Optional: Add a success message
-        messages.success(request, f"{restaurant.name} has been added to your favorites.")
-        pass
-    else:
-        # Optional: Handle the case where the favorite already exists
-        # messages.info(request, f"{restaurant.name} is already in your favorites.")
-        pass
-    return redirect('geolocator')
+def add_favorite(request, place_id, place_name=''):
+    print('add_favorite called')
+    print(place_id)
 
-# @login_required
-# def remove_favorite(request, restaurant_id):
-#     restaurant = get_object_or_404(Restaurant, id=restaurant_id)
-#     favorite = Favorite.objects.filter(user=request.user, restaurant=restaurant)
-#     if favorite.exists():
-#         favorite.delete()
-#         # Optional: Add a success message
-#         # messages.success(request, f"{restaurant.name} has been removed from your favorites.")
-#     else:
-#         # Optional: Handle the case where the favorite does not exist
-#         # messages.error(request, f"{restaurant.name} is not in your favorites.")
-#         pass
-#     return redirect('restaurant_detail', restaurant_id=restaurant.id)
+
+    try:
+        favorite = Favorite.objects.get(user=request.user, restaurant=place_id)
+        print(favorite)
+        favorite.delete()
+    except:
+        favorite = Favorite.objects.create(user=request.user, restaurant=place_id, restaurant_name=place_name)
+        print('created', favorite)
+    return redirect(request.META.get('HTTP_REFERER', 'geolocator'))
 
 @login_required
 def list_favorites(request):
-    favorites = Favorite.objects.filter(user=request.user).select_related('restaurant')
-    return render(request, 'favorites/list_favorites.html', {'favorites': favorites})
+    favorites = Favorite.objects.filter(user=request.user)
+    print(favorites)
+    return render(request, 'favorites/list-favorites.html', {'favorites': favorites})
