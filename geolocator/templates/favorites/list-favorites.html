@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlanta Food Finder - Favorite Restaurants</title>
+    <!-- Font and Icon Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <style>
+        /* Global Styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        /* Banner Styling */
+        .banner {
+            background-color: #a3c1a5;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .banner h1 {
+            margin: 0;
+            font-size: 30px;
+            color: #ffffff;
+            display: inline-block;
+        }
+
+        .banner i {
+            margin-right: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ffffffb3; /* Slightly lighter color on hover */
+        }
+
+        /* Content Styling */
+        .content {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .content h2 {
+            font-weight: 500;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .content ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .content li {
+            background: #f4f7f6;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+
+        .content li:hover {
+            background: #e9f5e9;
+        }
+
+        /* Button Styling */
+        .content button {
+            background: #ef5350;
+            color: #ffffff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .content button:hover {
+            background: #d32f2f;
+        }
+
+        /* Footer Styling */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #a3c1a5;
+            color: #ffffff;
+            margin-top: 50px;
+            border-top: 3px solid #8aa38b;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Top Banner Section -->
+    <div class="banner">
+        <!-- Left-aligned Title and Icon -->
+        <div>
+            <h1><i class="fas fa-utensils"></i> Atlanta Food Finder</h1>
+        </div>
+
+        <!-- Right-aligned Navigation Links -->
+        <div class="nav-links">
+            <a href="{% url 'geolocator' %}">Map</a>
+            <a href="{% url 'list_favorites' %}">Favorites</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </div>
+
+    <!-- Main Content Section -->
+    <div class="content">
+        {% block content %}
+            <h2>Your Favorite Restaurants</h2>
+
+            {% if favorites %}
+                <ul>
+                    {% for favorite in favorites %}
+                        <li>
+                            <span>{{ favorite.restaurant_name }}</span>
+                            <form action="{% url 'add_favorite' favorite.restaurant favorite.restaurant_name %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit">Remove</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>You have no favorite restaurants yet.</p>
+            {% endif %}
+        {% endblock %}
+    </div>
+
+    <!-- Footer Section -->
+    <div class="footer">
+        <p>&copy; 2024 Atlanta Food Finder | <a href="#">Privacy Policy</a> | <a href="#">Contact Us</a></p>
+    </div>
+</body>
+</html>
