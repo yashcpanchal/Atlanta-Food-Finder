@@ -318,6 +318,22 @@
             map.setCenter(place.geometry.location);
             const marker = markers[index] || createMarker(place);
 
+            getPlaceDetails(place.place_id, marker);
+        });
+          resultsList.appendChild(li);
+        });
+      }
+
+    function getPlaceDetails(placeId, marker) {
+       // Create the request object for place details
+      const request = {
+          placeId: placeId,
+          fields: ['name', 'rating', 'formatted_phone_number', 'international_phone_number', 'formatted_address', 'geometry', 'photos', 'place_id'] // Add any other required fields
+      };
+       // Use Places Service to fetch place details
+      service = new google.maps.places.PlacesService(map);
+      service.getDetails(request, function (place, status) {
+          if (status === google.maps.places.PlacesServiceStatus.OK) {
             // Create the info window content
             const placeName = place.name || "Unknown Place";
             const rating = place.rating ? `Rating: ${place.rating}/5` : "No ratings available";
@@ -330,24 +346,26 @@
                 : `<img src="https://via.placeholder.com/100" alt="No Image Available">`;
             const mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}" target="_blank">${address}</a>`;
 
-            // Set the content for the info window
-            const contentString = `
-                <div style="text-align: left;">
-                    <h4>${placeName}</h4>
-                    ${photo}
-                    <p>${mapLink}</p>
-                    <p>Phone: ${phone}</p>
-                    <p>${rating}</p>
-                    ${reviews}
-                </div>
-            `;
+              // Info window content
+              const contentString = `
+                  <div style="text-align: left;">
+                      <h4>${placeName}</h4>
+                      ${photo}
+                      <p>${address}</p>
+                      <p>Phone: ${phone}</p>
+                      <p>${rating}</p>
+                      ${reviews}
+                  </div>
+              `;
 
-            infowindow.setContent(contentString);
-            infowindow.open(map, marker);
-        });
-          resultsList.appendChild(li);
-        });
-      }
+              // Open the info window with the new content
+              infowindow.setContent(contentString);
+              infowindow.open(map, marker);
+          } else {
+              console.log('Place details request failed due to: ' + status);
+          }
+      });
+    }
 
     function createMarker(place) {
     const marker = new google.maps.Marker({
