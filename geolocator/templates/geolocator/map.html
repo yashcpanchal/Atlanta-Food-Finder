@@ -3,7 +3,7 @@
   <head>
     <title>Atlanta Food Finder</title>
 
-    {% load static %}  
+    {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'geolocator/css/map.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
@@ -11,14 +11,9 @@
  <body>
    <header id="top-banner">
         <h1>Atlanta Food Finder</h1>
-        <div class="dropdown">
-            <button>Menu</button>
-            <div class="dropdown-content">
-                <a href="/auth/login/">Login</a>
-            </div>
         </div>
     </header>
- 
+
 {# <i class="fas fa-home" style="font-size: 24px; color: darkslategray; cursor: pointer;" onclick="window.location.href='{% url 'admin.site.urls' %}'"></i>#}
 
 
@@ -116,7 +111,7 @@
       function updateResultsList(places) {
         const resultsList = document.getElementById('results-list');
         resultsList.innerHTML = '';
-          
+
       places.forEach((place, index) => {
       const li = document.createElement('li');
       li.innerHTML = `

@@ -3,7 +3,7 @@
     background-color: darkseagreen;  /* Background color for the banner */
     color: white;  /* Text color */
     padding: 20px;  /* Space around the content inside the banner */
-    /*text-align: left;*/
+    text-align: left;
     position: fixed;  /* Fix the banner at the top */
     justify-content: space-between;
     align-items: center;
