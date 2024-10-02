@@ -20,6 +20,58 @@
     font-family: 'Corbel', sans-serif;  /* Set the font */
 }
 
+/* Dropdown menu container */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            margin-right: 15px;
+        }
+
+        /* Dropdown button */
+        .dropdown button {
+            background-color: darkseagreen;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            float: right;
+        }
+
+        /* Dropdown content (hidden by default) */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        /* Links inside the dropdown */
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        /* Hover effect for the links */
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Show the dropdown content on hover */
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Change color of dropdown button on hover */
+        .dropdown:hover button {
+            background-color: #357abd;
+        }
+
 #map {
     height: 600px;
     width: 95%;
