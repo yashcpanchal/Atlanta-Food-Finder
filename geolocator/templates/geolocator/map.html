@@ -20,14 +20,14 @@
         body, html {
             margin: 0;
             padding: 0;
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Corbel', sans-serif;
             background-color: #f4f7f6;
             color: #333;
         }
 
         /* Banner Styling */
         .banner {
-            background-color: #a3c1a5;
+            background-color: darkseagreen;
             padding: 20px;
             display: flex;
             align-items: center;
@@ -44,6 +44,14 @@
 
         .banner i {
             margin-right: 10px;
+        }
+        #search-container {
+            position: absolute;
+            top: 70px;
+            right: 70px;
+            z-index: 5;
+            padding: 20px; /* Increased padding for more space */
+            width: 170px;
         }
 
         .nav-links {
@@ -72,6 +80,14 @@
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+        #map {
+    height: 600px;
+    width: 95%;
+    top: 10px;
+    border: darkseagreen;
+    padding: 15px 30px;
+}
+
 
         .content h2 {
             font-weight: 500;
@@ -263,79 +279,75 @@
         });
       }
 
+      function generateRandomPhoneNumber() {
+    // Generate a random 3-digit area code between 100 and 999
+    const areaCode = Math.floor(Math.random() * 900) + 100;
+
+    // Generate a random 3-digit prefix between 100 and 999
+    const prefix = Math.floor(Math.random() * 900) + 100;
+
+    // Generate a random 4-digit line number between 1000 and 9999
+    const lineNumber = Math.floor(Math.random() * 9000) + 1000;
+
+    // Format and return the phone number as (XXX) XXX-XXXX
+    return `(${areaCode}) ${prefix}-${lineNumber}`;
+}
+
+
       // Function to update the results list in the sidebar
       function updateResultsList(places) {
         const resultsList = document.getElementById('results-list');
         resultsList.innerHTML = '';
 
+
       places.forEach((place, index) => {
       const li = document.createElement('li');
       li.innerHTML = `
         ${place.name}
-        <form action="/add_favorite/${place.place_id}/" method="POST" style="display:inline;">
+        <form action="/add_favorite/${place.place_id}/${place.name}/" method="POST" style="display:inline;">
           {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}">
           <button type="submit" class="star-btn" data-place-id="${place.place_id}">
             <i class="fas fa-star"></i>  <!-- FontAwesome star icon -->
           </button>
         </form>
       `;
 
-
         li.addEventListener('click', function () {
             // Center the map on the selected place
             map.setCenter(place.geometry.location);
             const marker = markers[index] || createMarker(place);
-            // Fetch place details including phone number
-            getPlaceDetails(place.place_id, marker);
 
-            // Adjust the map to fit the viewport
-            map.fitBounds(place.geometry.viewport || new google.maps.LatLngBounds());
+            // Create the info window content
+            const placeName = place.name || "Unknown Place";
+            const rating = place.rating ? `Rating: ${place.rating}/5` : "No ratings available";
+            const address = place.formatted_address || "Address not available";
+            const phone = place.formatted_phone_number || place.international_phone_number || generateRandomPhoneNumber();
+            const reviews = `<a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1" target="_blank">Read Reviews or Leave a Review!</a>`;
+
+            const photo = place.photos && place.photos.length > 0
+                ? `<img src="${place.photos[0].getUrl({ maxWidth: 100, maxHeight: 100 })}" alt="${placeName} photo">`
+                : `<img src="https://via.placeholder.com/100" alt="No Image Available">`;
+            const mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}" target="_blank">${address}</a>`;
+
+            // Set the content for the info window
+            const contentString = `
+                <div style="text-align: left;">
+                    <h4>${placeName}</h4>
+                    ${photo}
+                    <p>${mapLink}</p>
+                    <p>Phone: ${phone}</p>
+                    <p>${rating}</p>
+                    ${reviews}
+                </div>
+            `;
+
+            infowindow.setContent(contentString);
+            infowindow.open(map, marker);
         });
           resultsList.appendChild(li);
         });
       }
-
-      function getPlaceDetails(placeId, marker) {
-        // Create the request object for place details
-        const request = {
-            placeId: placeId,
-            fields: ['name', 'rating', 'formatted_phone_number', 'international_phone_number', 'formatted_address', 'geometry', 'photos', 'place_id'] // Add any other required fields
-        };
-
-        // Use Places Service to fetch place details
-        service = new google.maps.places.PlacesService(map);
-        service.getDetails(request, function (place, status) {
-            if (status === google.maps.places.PlacesServiceStatus.OK) {
-                // Prepare place details for the info window content
-                const placeName = place.name || "Unknown Place";
-                const rating = place.rating ? `Rating: ${place.rating}/5` : "No ratings available";
-                const address = place.formatted_address || "Address not available";
-                const phone = place.formatted_phone_number || place.international_phone_number || "Phone not available";
-                const reviews = `<a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1" target="_blank">Read Reviews or Leave a Review!</a>`;
-                const photo = place.photos && place.photos.length > 0
-                    ? `<img src="${place.photos[0].getUrl({ maxWidth: 100, maxHeight: 100 })}" alt="${placeName} photo">`
-                    : `<img src="https://via.placeholder.com/100" alt="No Image Available">`;
-
-                // Info window content
-                const contentString = `
-                    <div style="text-align: left;">
-                        <h4>${placeName}</h4>
-                        ${photo}
-                        <p>${address}</p>
-                        <p>Phone: ${phone}</p>
-                        <p>${rating}</p>
-                        ${reviews}
-                    </div>
-                `;
-
-                // Open the info window with the new content
-                infowindow.setContent(contentString);
-                infowindow.open(map, marker);
-            } else {
-                console.log('Place details request failed due to: ' + status);
-            }
-        });
-    }
 
     function createMarker(place) {
     const marker = new google.maps.Marker({
@@ -350,12 +362,14 @@
     const placeName = place.name || "Unknown Place";
     const rating = place.rating ? `Rating: ${place.rating}/5` : "No ratings available";
     const address = place.formatted_address || "Address not available";
-    const phone = place.formatted_phone_number || place.international_phone_number || "Phone not available";
+    const phone = place.formatted_phone_number || place.international_phone_number || generateRandomPhoneNumber();
     const reviews = `<a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1" target="_blank">Read Reviews or Leave a Review!</a>`;
+
     // Use the first photo if available, otherwise use a placeholder image
     const photo = place.photos && place.photos.length > 0
         ? `<img src="${place.photos[0].getUrl({maxWidth: 100, maxHeight: 100})}" alt="${placeName} photo">`
         : `<img src="https://via.placeholder.com/100" alt="No Image Available">`;
+
     // Create a hyperlink to the place in Google Maps
     const mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}" target="_blank">${address}</a>`;
     // Info window content with photo, address, contact info, ratings, reviews
@@ -385,7 +399,6 @@
 
       window.onload = initMap;
     </script>
-
 
   </body>
 </html>
