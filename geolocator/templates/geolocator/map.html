@@ -268,21 +268,12 @@
         const resultsList = document.getElementById('results-list');
         resultsList.innerHTML = '';
 
-        {#places.forEach((place, index) => {#}
-        {#const li = document.createElement('li');#}
-        {#li.innerHTML = `#}
-        {#    ${place.name}#}
-        {#    <button class="star-btn" data-place-id="${place.place_id}">#}
-        {#        <i class="fas fa-star"></i>  <!-- FontAwesome star icon -->#}
-        {#    </button>#}
-        {#`;#}
       places.forEach((place, index) => {
       const li = document.createElement('li');
       li.innerHTML = `
         ${place.name}
-        <form action="/add_favorite/${place.place_id}/${place.name}/" method="POST" style="display:inline;">
+        <form action="/add_favorite/${place.place_id}/" method="POST" style="display:inline;">
           {% csrf_token %}
-          <input type="hidden" name="next" value="{{ request.path }}">
           <button type="submit" class="star-btn" data-place-id="${place.place_id}">
             <i class="fas fa-star"></i>  <!-- FontAwesome star icon -->
           </button>
@@ -290,52 +281,61 @@
       `;
 
 
-        {#// Add event listener to center the map and open the info window when the list item is clicked#}
-        {#li.querySelector('.star-btn').addEventListener('click', function (event) {#}
-        {#    event.stopPropagation(); // Prevent map centering when the star is clicked#}
-        {##}
-        {#    // Fetch the place ID from the data attribute#}
-        {#    const placeId = this.getAttribute('data-place-id');#}
-        {##}
-        {#    // Send a request to the view to save this place to the favorites list#}
-        {#    add_favorite(placeId, placeName);#}
-        {#});#}
-
         li.addEventListener('click', function () {
             // Center the map on the selected place
             map.setCenter(place.geometry.location);
             const marker = markers[index] || createMarker(place);
+            // Fetch place details including phone number
+            getPlaceDetails(place.place_id, marker);
 
-            // Create the info window content
-            const placeName = place.name || "Unknown Place";
-            const rating = place.rating ? `Rating: ${place.rating}/5` : "No ratings available";
-            const address = place.formatted_address || "Address not available";
-            const phone = place.formatted_phone_number || place.international_phone_number || "Phone not available";
-            const reviews = `<a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1" target="_blank">Read Reviews or Leave a Review!</a>`;
-
-            const photo = place.photos && place.photos.length > 0
-                ? `<img src="${place.photos[0].getUrl({ maxWidth: 100, maxHeight: 100 })}" alt="${placeName} photo">`
-                : `<img src="https://via.placeholder.com/100" alt="No Image Available">`;
-            const mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}" target="_blank">${address}</a>`;
-
-            // Set the content for the info window
-            const contentString = `
-                <div style="text-align: left;">
-                    <h4>${placeName}</h4>
-                    ${photo}
-                    <p>${mapLink}</p>
-                    <p>Phone: ${phone}</p>
-                    <p>${rating}</p>
-                    ${reviews}
-                </div>
-            `;
-
-            infowindow.setContent(contentString);
-            infowindow.open(map, marker);
+            // Adjust the map to fit the viewport
+            map.fitBounds(place.geometry.viewport || new google.maps.LatLngBounds());
         });
           resultsList.appendChild(li);
         });
       }
+
+      function getPlaceDetails(placeId, marker) {
+        // Create the request object for place details
+        const request = {
+            placeId: placeId,
+            fields: ['name', 'rating', 'formatted_phone_number', 'international_phone_number', 'formatted_address', 'geometry', 'photos', 'place_id'] // Add any other required fields
+        };
+
+        // Use Places Service to fetch place details
+        service = new google.maps.places.PlacesService(map);
+        service.getDetails(request, function (place, status) {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                // Prepare place details for the info window content
+                const placeName = place.name || "Unknown Place";
+                const rating = place.rating ? `Rating: ${place.rating}/5` : "No ratings available";
+                const address = place.formatted_address || "Address not available";
+                const phone = place.formatted_phone_number || place.international_phone_number || "Phone not available";
+                const reviews = `<a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1" target="_blank">Read Reviews or Leave a Review!</a>`;
+                const photo = place.photos && place.photos.length > 0
+                    ? `<img src="${place.photos[0].getUrl({ maxWidth: 100, maxHeight: 100 })}" alt="${placeName} photo">`
+                    : `<img src="https://via.placeholder.com/100" alt="No Image Available">`;
+
+                // Info window content
+                const contentString = `
+                    <div style="text-align: left;">
+                        <h4>${placeName}</h4>
+                        ${photo}
+                        <p>${address}</p>
+                        <p>Phone: ${phone}</p>
+                        <p>${rating}</p>
+                        ${reviews}
+                    </div>
+                `;
+
+                // Open the info window with the new content
+                infowindow.setContent(contentString);
+                infowindow.open(map, marker);
+            } else {
+                console.log('Place details request failed due to: ' + status);
+            }
+        });
+    }
 
     function createMarker(place) {
     const marker = new google.maps.Marker({
@@ -352,12 +352,10 @@
     const address = place.formatted_address || "Address not available";
     const phone = place.formatted_phone_number || place.international_phone_number || "Phone not available";
     const reviews = `<a href="https://www.google.com/maps/place/?q=place_id:${place.place_id}#lrd=0x0:0x0,1" target="_blank">Read Reviews or Leave a Review!</a>`;
-
     // Use the first photo if available, otherwise use a placeholder image
     const photo = place.photos && place.photos.length > 0
         ? `<img src="${place.photos[0].getUrl({maxWidth: 100, maxHeight: 100})}" alt="${placeName} photo">`
         : `<img src="https://via.placeholder.com/100" alt="No Image Available">`;
-
     // Create a hyperlink to the place in Google Maps
     const mapLink = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}" target="_blank">${address}</a>`;
     // Info window content with photo, address, contact info, ratings, reviews
