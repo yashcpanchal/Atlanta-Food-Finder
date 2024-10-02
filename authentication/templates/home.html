@@ -5,6 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <style>
+        /* Top banner styling */
+        #top-banner {
+            background-color: darkseagreen;  /* Background color for the banner */
+            color: white;  /* Text color */
+            padding: 20px;  /* Space around the content inside the banner */
+            /*text-align: left;*/
+            position: fixed;  /* Fix the banner at the top */
+            justify-content: space-between;
+            align-items: center;
+            top: 0;  /* Align it to the top of the page */
+            width: 100%;  /* Make it span the full width of the screen */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);  /* Add some shadow for a subtle 3D effect */
+        }
+
+        /* Styling for the title inside the banner */
+        #top-banner h1 {
+            margin: 0;  /* Remove default margin from the h1 */
+            text-align: left;
+            font-size: 1.5em;  /* Adjust font size */
+            font-family: 'Corbel', sans-serif;  /* Set the font */
+        }
+        
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -57,18 +79,18 @@
  <!-- Top Banner -->
   <header id="top-banner">
     <h1>Atlanta Food Finder</h1>
-{#    <div class="circle-btn-container">#}
-{#        <a href="{%  %}" class="circle-btn">#}
-{#          <i class="fas fa-user"></i> <!-- Font Awesome user icon -->#}
-{#        </a>#}
-{#    </div>  #}
+      <div class="circle-btn-container">
+          <a href="{%  %}" class="circle-btn">
+            <i class="fas fa-user"></i> <!-- Font Awesome user icon -->
+          </a>
+      </div>
   </header>
 <body>
     <div class="container">
         <a href="/atlantaFoodFinder/authentication/templates/register.html">Register</a><br>
         <a href="/atlantaFoodFinder/authentication/templates/login.html">Login</a>
         <div class="footer">
-            <p>&copy; 2024 anusha kumar</p>
+            <p>&copy; 2024 CS2340 TEAM 50</p>
         </div>
     </div>
 </body>
