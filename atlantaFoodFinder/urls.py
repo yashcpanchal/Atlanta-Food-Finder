@@ -17,10 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from geolocator import views
+from authentication import views
 
 urlpatterns = [
+    path('', views.home_view, name='home'),
     path('admin/', admin.site.urls),
-    path('accounts/', include('authentication.urls')),
+    path('auth/', include('authentication.urls')),
     path('map/', views.geolocator, name='geolocator'),
     path('add_favorite/<str:restaurant_id>/', views.add_favorite, name='add_favorite'),
 ]
