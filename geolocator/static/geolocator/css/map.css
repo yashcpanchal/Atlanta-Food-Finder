@@ -35,7 +35,7 @@
             font-size: 16px;
             border: none;
             cursor: pointer;
-            float: right;
+            margin-right: 0;
         }
 
         /* Dropdown content (hidden by default) */
