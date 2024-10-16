@@ -22,6 +22,7 @@ To run this project locally:
 1. Clone the repository:
    ```bash
    git clone https://github.com/username/atlanta-food-finder.git
+2. Generate your own Google Maps API key on Google Cloud Console and replace 'GOOGLE_API_KEY' in settings.py with your own key.
 
 ## Team Website
 https://aditiu101.wixsite.com/team-50
